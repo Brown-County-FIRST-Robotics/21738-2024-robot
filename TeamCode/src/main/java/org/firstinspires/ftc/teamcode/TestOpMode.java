@@ -67,7 +67,7 @@ public class BasicOpMode_Iterative extends OpMode
         double drive = -gamepad1.left_stick_y;
         double strafe = -gamepad1.right_stick_x;
         double uppies = -gamepad2.left_stick_y;
-        double twists = -gamepad2.right_stick_x;
+//        double twists = -gamepad2.right_stick_x;
         // double denominator = Math.max(Math.abs(rotate) + Math.abs(strafe) + Math.abs(drive_), .75);
         double frontLeftPower = (.75 * .75 * rotate + strafe + drive);// / denominator;
         double backLeftPower = (.75 * .75 * rotate - strafe + drive);// / denominator;
@@ -86,14 +86,14 @@ public class BasicOpMode_Iterative extends OpMode
             arm.setPower(0);
         }
 
-//            shoulder.setPosition(shoulder.getPosition() + (gamepad2.left_stick_x * 0.01));
-        if (twists > 0.05){
-            shoulder.setPosition(shoulder.getPosition()+0.1);
-        }else if (twists < -0.05){
-            shoulder.setPosition(shoulder.getPosition()-0.1);
-        }else {
-            shoulder.setPosition(0);
-        }
+        shoulder.setPosition(shoulder.getPosition() + (gamepad2.left_stick_x * 0.01));
+//        if (twists > 0.05){
+//            shoulder.setPosition(shoulder.getPosition()+0.1);
+//        }else if (twists < -0.05){
+//            shoulder.setPosition(shoulder.getPosition()-0.1);
+//        }else {
+//            shoulder.setPosition(0);
+//        }
 
     }
 
