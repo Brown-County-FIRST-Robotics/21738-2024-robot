@@ -1,40 +1,46 @@
-package org.firstinspires.ftc.robotcontroller.external.samples;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+
+package org.firstinspires.ftc.teamcode;
+
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-@TeleOp(name="Test OpMode", group="Iterative OpMode")
-public class TestOpMode extends OpMode
+
+
+@TeleOp(name="Emmit Test Program", group="Iterative OpMode")
+public class BasicOpMode_Iterative extends OpMode
 {
+    // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor leftDrive = null;
-    private DcMotor rightDrive = null;
+    //    private DcMotor frontLeftDrive = null;
+//    private DcMotor frontRightDrive = null;
+//    private DcMotor backRightDrive = null;
+//    private DcMotor backLeftDrive = null;
+    private DcMotor arm = null;
+    private Servo shoulder = null;
 
-    /*
-     * Code to run ONCE when the driver hits INIT
-     */
     @Override
-    public void init() {
+    public void init() { // when you press start, this code runs once
         telemetry.addData("Status", "Initialized");
 
-        // Initialize the hardware variables. Note that the strings used here as parameters
-        // to 'get' must correspond to the names assigned during the robot configuration
-        // step (using the FTC Robot Controller app on the phone).
-        leftDrive  = hardwareMap.get(DcMotor.class, "left_drive");
-        rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
+//        frontLeftDrive = hardwareMap.get(DcMotor.class, "frontLeftDrive");
+//        frontRightDrive = hardwareMap.get(DcMotor.class, "frontRightDrive");
+//        backRightDrive = hardwareMap.get(DcMotor.class, "backRightDrive");
+//        backLeftDrive = hardwareMap.get(DcMotor.class, "backLeftDrive");
+        arm = hardwareMap.get(DcMotor.class, "arm");
+        shoulder = hardwareMap.get(Servo.class,"shoulder");
 
-        // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
-        // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
-        // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
-        leftDrive.setDirection(DcMotor.Direction.REVERSE);
-        rightDrive.setDirection(DcMotor.Direction.FORWARD);
 
-        // Tell the driver that initialization is complete.
-        telemetry.addData("Status", "Initialized");
+//        frontLeftDrive.setDirection(DcMotor.Direction.FORWARD);
+//        frontRightDrive.setDirection(DcMotor.Direction.FORWARD);
+//        backRightDrive.setDirection(DcMotorSimple.Direction.FORWARD);
+//        backLeftDrive.setDirection(DcMotorSimple.Direction.FORWARD);
+        arm.setDirection(DcMotorSimple.Direction.FORWARD);
     }
 
     /*
@@ -57,32 +63,38 @@ public class TestOpMode extends OpMode
      */
     @Override
     public void loop() {
-        // Setup a variable for each drive wheel to save power level for telemetry
-        double leftPower;
-        double rightPower;
-
-        // Choose to drive using either Tank Mode, or POV Mode
-        // Comment out the method that's not used.  The default below is POV.
-
-        // POV Mode uses left stick to go forward, and right stick to turn.
-        // - This uses basic math to combine motions and is easier to drive straight.
+        double rotate = -gamepad1.left_stick_x;
         double drive = -gamepad1.left_stick_y;
-        double turn  =  gamepad1.right_stick_x;
-        leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
-        rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;
+        double strafe = -gamepad1.right_stick_x;
+        double uppies = -gamepad2.left_stick_y;
+        double twists = -gamepad2.right_stick_x;
+        // double denominator = Math.max(Math.abs(rotate) + Math.abs(strafe) + Math.abs(drive_), .75);
+        double frontLeftPower = (.75 * .75 * rotate + strafe + drive);// / denominator;
+        double backLeftPower = (.75 * .75 * rotate - strafe + drive);// / denominator;
+        double frontRightPower = (.75 * .75 * rotate - strafe - drive);// / denominator;
+        double backRightPower = (.75 * .75 * rotate + strafe - drive);// / denominator;
+//            frontLeftDrive.setPower(frontLeftPower);
+//            frontRightDrive.setPower(frontRightPower);
+//            backLeftDrive.setPower(backLeftPower);
+//            backRightDrive.setPower(backRightPower);
 
-        // Tank Mode uses one stick to control each wheel.
-        // - This requires no math, but it is hard to drive forward slowly and keep straight.
-        // leftPower  = -gamepad1.left_stick_y ;
-        // rightPower = -gamepad1.right_stick_y ;
+        if (uppies > 0.05){
+            arm.setPower(.5);
+        } else if (uppies < -0.05) {
+            arm.setPower(-.5);
+        } else {
+            arm.setPower(0);
+        }
 
-        // Send calculated power to wheels
-        leftDrive.setPower(leftPower);
-        rightDrive.setPower(rightPower);
+//            shoulder.setPosition(shoulder.getPosition() + (gamepad2.left_stick_x * 0.01));
+        if (twists > 0.05){
+            shoulder.setPosition(shoulder.getPosition()+0.1);
+        }else if (twists < -0.05){
+            shoulder.setPosition(shoulder.getPosition()-0.1);
+        }else {
+            shoulder.setPosition(0);
+        }
 
-        // Show the elapsed game time and wheel power.
-        telemetry.addData("Status", "Run Time: " + runtime.toString());
-        telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
     }
 
     /*
@@ -90,6 +102,9 @@ public class TestOpMode extends OpMode
      */
     @Override
     public void stop() {
+
+
+
     }
 
 }
