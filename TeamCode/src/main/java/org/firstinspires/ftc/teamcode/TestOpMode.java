@@ -1,18 +1,14 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
-
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 @TeleOp(name="Test", group="Iterative OpMode")
-public class BasicOpMode_Iterative extends OpMode
+public class TestOpMode extends OpMode
 {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -27,7 +23,10 @@ public class BasicOpMode_Iterative extends OpMode
     private Servo shoulder = null;
     private Servo elbo = null;
     private Servo hook = null;
-
+    private Servo wrist = null;
+    private Servo hand = null;
+    private DcMotor intake = null;
+    private Servo extender = null;
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -45,8 +44,13 @@ public class BasicOpMode_Iterative extends OpMode
         backRightDrive = hardwareMap.get(DcMotor.class, "backRightDrive");
         arm = hardwareMap.get(DcMotor.class, "arm");
         shoulder = hardwareMap.get(Servo.class,"shoulder");
-        elbo = hardwareMap.get(Servo.class, "elbo");
+        elbow = hardwareMap.get(Servo.class, "elbow");
+        wrist = hardwareMap.get(Servo.class, "wrist");
         hook = hardwareMap.get(Servo.class, "hook");
+        hand = hardwareMap.get(Servo.class, "hand");
+        intake = hardwareMap.get(DcMotor.class, "intake");
+        extender = hardwareMap.get(Servo.class, "extender");
+//        hook.setDirection(Servo.Direction.REVERSE);
 
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
@@ -57,6 +61,7 @@ public class BasicOpMode_Iterative extends OpMode
         backLeftDrive.setDirection(DcMotor.Direction.FORWARD);
         backRightDrive.setDirection(DcMotor.Direction.FORWARD);
         arm.setDirection(DcMotorSimple.Direction.FORWARD);
+        intake.setDirection(DcMotorSimple.Direction.FORWARD);
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -85,7 +90,6 @@ public class BasicOpMode_Iterative extends OpMode
         // Setup a variable for each drive wheel to save power level for telemetry
 
 
-
         telemetry.addData("Status", "Run Time: " + runtime.toString());
 
 
@@ -99,7 +103,7 @@ public class BasicOpMode_Iterative extends OpMode
         backLeftDrive.setPower(0.75 * signedSquare(rotation - strafing + movement));
         backRightDrive.setPower(0.75 * signedSquare(rotation + strafing - movement));
 
-        if (uppies > 0.05){
+        if (uppies > 0.05) {
             arm.setPower(.5);
         } else if (uppies < -0.05) {
             arm.setPower(-.5);
@@ -111,19 +115,48 @@ public class BasicOpMode_Iterative extends OpMode
 
 
         if (gamepad2.x) {
-            elbo.setPosition(elbo.getPosition() +0.001);
+            elbow.setPosition(elbow.getPosition() + 0.001);
         }
         if (gamepad2.y) {
-            elbo.setPosition(elbo.getPosition() -0.001); //TODO: increase speed
+            elbow.setPosition(elbow.getPosition() - 0.001); //TODO: increase speed
         }
         telemetry.addData("Position", elbo.getPosition());
 
         if (gamepad2.right_bumper) {
-            hook.setPosition(0.5);}
+            hook.setPosition(.38);
+        }
         if (gamepad2.left_bumper) {
-            hook.setPosition(0.5); }
-        telemetry.addData("Position2", hook.getPosition());
+            hook.setPosition(.625);
+        }
+
+        double speed = 0.01; // Increase speed to 0.01 for faster movement
+
+        if (gamepad2.a) {
+            wrist.setPosition(wrist.getPosition() + 0.001);
+        }
+        if (gamepad2.b) {
+            wrist.setPosition(wrist.getPosition() - 0.001);
+            telemetry.addData("Position2", wrist.getPosition());
+        } //increes speed
+
+
+        if (gamepad1.right_trigger > 0.5) {
+            hand.setPosition(0);
+        } else if (gamepad1.left_trigger > .5) {
+            hand.setPosition(0.2094);
+            //hand.setPosition(.25);
+            //hand.setPosition(0.525);
+        }
+        telemetry.addData("Position3", hand.getPosition());
+        if (Math.abs(gamepad2.left_stick_x) > .05) {
+
+            intake.setPower(gamepad2.right_stick_x);
+
+        }
+        extender.setPosition(extender.getPosition() + (gamepad2.right_stick_y * 0.01));
+
     }
+
 
     /*
      * Code to run ONCE after the driver hits STOP
