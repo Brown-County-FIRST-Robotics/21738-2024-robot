@@ -21,7 +21,7 @@ public class TestOpMode extends OpMode
     private DcMotor arm = null;
 
     private Servo shoulder = null;
-    private Servo elbo = null;
+    private Servo elbow = null;
     private Servo hook = null;
     private Servo wrist = null;
     private Servo hand = null;
@@ -120,7 +120,7 @@ public class TestOpMode extends OpMode
         if (gamepad2.y) {
             elbow.setPosition(elbow.getPosition() - 0.001); //TODO: increase speed
         }
-        telemetry.addData("Position", elbo.getPosition());
+        telemetry.addData("Position", elbow.getPosition());
 
         if (gamepad2.right_bumper) {
             hook.setPosition(.38);
@@ -137,7 +137,7 @@ public class TestOpMode extends OpMode
         if (gamepad2.b) {
             wrist.setPosition(wrist.getPosition() - 0.001);
             telemetry.addData("Position2", wrist.getPosition());
-        } //increes speed
+        } //increases speed
 
 
         if (gamepad1.right_trigger > 0.5) {
