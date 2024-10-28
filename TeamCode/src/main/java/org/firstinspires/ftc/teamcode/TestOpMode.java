@@ -27,7 +27,7 @@ public class TestOpMode extends OpMode
     private Servo hand = null;
     private DcMotor intake = null;
     private Servo extender = null;
-
+private Servo twist = null;
     /*
      * Code to run ONCE when the driver hits INIT
      */
@@ -50,6 +50,7 @@ public class TestOpMode extends OpMode
         hand = hardwareMap.get(Servo.class, "hand");
         intake = hardwareMap.get(DcMotor.class, "intake");
         extender = hardwareMap.get(Servo.class, "extender");
+        twist = hardwareMap.get(Servo.class, "twist");
 //        hook.setDirection(Servo.Direction.REVERSE);
 
 
@@ -153,8 +154,8 @@ public class TestOpMode extends OpMode
             intake.setPower(gamepad2.right_stick_x);
 
         }
-        extender.setPosition(extender.getPosition() + (gamepad2.right_stick_y * 0.01));
-
+        extender.setPosition(extender.getPosition() + (gamepad2.right_stick_y * 0.001));
+twist.setPosition(twist.getPosition() + (gamepad2.left_stick_y * 0.001));
     }
 
 
