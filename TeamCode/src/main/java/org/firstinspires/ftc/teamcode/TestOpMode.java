@@ -1,9 +1,12 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -28,6 +31,14 @@ public class TestOpMode extends OpMode
     private DcMotor intake = null;
     private Servo extender = null;
 private Servo twist = null;
+private DcMotor slide2 = null;
+
+private DigitalChannel limit1 = null;
+private RevColorSensorV3 colorSensor = null;
+
+int[] redConst = {70, 100, 58, 75};
+int[] blueConst = {64, 95, 53, 70};
+int[] yellowConst = {70, 51, 100, 74};
     /*
      * Code to run ONCE when the driver hits INIT
      */
@@ -51,8 +62,10 @@ private Servo twist = null;
         intake = hardwareMap.get(DcMotor.class, "intake");
         extender = hardwareMap.get(Servo.class, "extender");
         twist = hardwareMap.get(Servo.class, "twist");
+        slide2 = hardwareMap.get(DcMotor.class, "slide2");
 //        hook.setDirection(Servo.Direction.REVERSE);
-
+        limit1 = hardwareMap.get(DigitalChannel.class, "limit1");
+        colorSensor = hardwareMap.get(RevColorSensorV3.class, "color");
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
@@ -98,11 +111,14 @@ private Servo twist = null;
         double movement = -gamepad1.left_stick_y;
         double strafing = -gamepad1.right_stick_x;
         double uppies = -gamepad2.left_stick_y;
+        double slide3 = -gamepad2.right_stick_y;
 
         frontLeftDrive.setPower(0.75 * signedSquare(rotation + strafing + movement));
         frontRightDrive.setPower(0.75 * signedSquare(rotation - strafing - movement));
         backLeftDrive.setPower(0.75 * signedSquare(rotation - strafing + movement));
         backRightDrive.setPower(0.75 * signedSquare(rotation + strafing - movement));
+
+        DigitalChannel hi;
 
         if (uppies > 0.05) {
             arm.setPower(.5);
@@ -130,8 +146,6 @@ private Servo twist = null;
             hook.setPosition(.625);
         }
 
-        double speed = 0.01; // Increase speed to 0.01 for faster movement
-
         if (gamepad2.a) {
             wrist.setPosition(wrist.getPosition() + 0.001);
         }
@@ -155,9 +169,24 @@ private Servo twist = null;
 
         }
         extender.setPosition(extender.getPosition() + (gamepad2.right_stick_y * 0.001));
-twist.setPosition(twist.getPosition() + (gamepad2.left_stick_y * 0.001));
-    }
 
+        if (-gamepad2.right_stick_y > 0.05) {
+            slide2.setPower(.5);
+        } else if (-gamepad2.right_stick_y < -0.05) {
+            slide2.setPower(-.5);
+        } else {
+            slide2.setPower(0);
+
+            telemetry.addData("red", colorSensor.red());
+            telemetry.addData("blue", colorSensor.blue());
+            telemetry.addData("green", colorSensor.green());
+            telemetry.addData("alpha", colorSensor.alpha());
+
+        }
+
+        checkLimitSwitch();
+        checkColorSensor();
+    }
 
     /*
      * Code to run ONCE after the driver hits STOP
@@ -165,6 +194,34 @@ twist.setPosition(twist.getPosition() + (gamepad2.left_stick_y * 0.001));
     @Override
     public void stop() {
     }
+
+    public void checkLimitSwitch() {
+       // double speed = 0.01; // Increase speed to 0.01 for faster movement
+        if (arm.getPower() > 0) {
+            if (limit1.getState()) {
+
+                arm.setPower(0);
+            }
+        }
+        if (gamepad1.dpad_left){
+            twist.setPosition(0.6);
+        } else if (gamepad1.dpad_right) {
+            twist.setPosition(0.2);
+
+    //        if (colorSensor
+        }
+
+    }
+    public void checkColorSensor() {
+        int blueDifference;
+        int redDifference;
+        int yellowDifference;
+
+        for (int i : blueConst){
+
+        }
+    }
+
 
     //takes a value and multiplies it by its absolute value, then returns that (square function but keeps the sign)
     private double signedSquare(double x) {
