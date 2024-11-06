@@ -165,7 +165,7 @@ int[] yellowConst = {70, 51, 100, 74};
         telemetry.addData("Position3", hand.getPosition());
         if (Math.abs(gamepad2.left_stick_x) > .05) {
 
-            intake.setPower(gamepad2.right_stick_x);
+        //    intake.setPower(gamepad2.right_stick_x);
 
         }
         extender.setPosition(extender.getPosition() + (gamepad2.right_stick_y * 0.001));
@@ -213,12 +213,29 @@ int[] yellowConst = {70, 51, 100, 74};
 
     }
     public void checkColorSensor() {
-        int blueDifference;
-        int redDifference;
-        int yellowDifference;
+        int redBlockDifference = 0;
+        int blueBlockDifference = 0;
+        int yellowBlockDifference = 0;
 
-        for (int i : blueConst){
+        int[] currentColor = new int[4];
+        currentColor[0] = colorSensor.red();
+        currentColor[1] = colorSensor.green();
+        currentColor[2] = colorSensor.blue();
+        currentColor[3] = colorSensor.alpha();
 
+        for (int i  = 0; i < 4; i++){
+            redBlockDifference += Math.abs(redConst[i] - currentColor[i]);
+            blueBlockDifference += Math.abs(blueConst[i] - currentColor[i]);
+            yellowBlockDifference += Math.abs(yellowConst[i] - currentColor[i]);
+
+        }
+
+        int min = Math.min(Math.min(redBlockDifference, blueBlockDifference), yellowBlockDifference);
+        if (min == yellowBlockDifference || min==redBlockDifference) {
+            intake.setPower(1);
+        }
+        else if (min == blueBlockDifference){
+            intake.setPower(-1);
         }
     }
 
