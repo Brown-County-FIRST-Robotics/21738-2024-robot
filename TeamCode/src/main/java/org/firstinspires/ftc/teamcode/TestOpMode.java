@@ -11,8 +11,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 @TeleOp(name="Test", group="Iterative OpMode")
-public class TestOpMode extends OpMode
-{
+public class TestOpMode extends OpMode {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
 
@@ -30,15 +29,17 @@ public class TestOpMode extends OpMode
     private Servo hand = null;
     private DcMotor intake = null;
     private Servo extender = null;
-private Servo twist = null;
-private DcMotor slide2 = null;
+    private Servo twist = null;
+    private DcMotor slide2 = null;
 
-private DigitalChannel limit1 = null;
-private RevColorSensorV3 colorSensor = null;
+    private DigitalChannel limit1 = null;
+    private DigitalChannel teamColor = null;
+    private RevColorSensorV3 colorSensor = null;
 
-int[] redConst = {70, 100, 58, 75};
-int[] blueConst = {64, 95, 53, 70};
-int[] yellowConst = {70, 51, 100, 74};
+    int[] redConst = {70, 100, 58, 75};
+    int[] blueConst = {64, 95, 53, 70};
+    int[] yellowConst = {70, 51, 100, 74};
+
     /*
      * Code to run ONCE when the driver hits INIT
      */
@@ -49,12 +50,12 @@ int[] yellowConst = {70, 51, 100, 74};
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
-        frontLeftDrive  = hardwareMap.get(DcMotor.class, "frontLeftDrive");
+        frontLeftDrive = hardwareMap.get(DcMotor.class, "frontLeftDrive");
         frontRightDrive = hardwareMap.get(DcMotor.class, "frontRightDrive");
-        backLeftDrive  = hardwareMap.get(DcMotor.class, "backLeftDrive");
+        backLeftDrive = hardwareMap.get(DcMotor.class, "backLeftDrive");
         backRightDrive = hardwareMap.get(DcMotor.class, "backRightDrive");
         arm = hardwareMap.get(DcMotor.class, "arm");
-        shoulder = hardwareMap.get(Servo.class,"shoulder");
+        shoulder = hardwareMap.get(Servo.class, "shoulder");
         elbow = hardwareMap.get(Servo.class, "elbow");
         wrist = hardwareMap.get(Servo.class, "wrist");
         hook = hardwareMap.get(Servo.class, "hook");
@@ -65,6 +66,7 @@ int[] yellowConst = {70, 51, 100, 74};
         slide2 = hardwareMap.get(DcMotor.class, "slide2");
 //        hook.setDirection(Servo.Direction.REVERSE);
         limit1 = hardwareMap.get(DigitalChannel.class, "limit1");
+        teamColor = hardwareMap.get(DigitalChannel.class, "teamColor");
         colorSensor = hardwareMap.get(RevColorSensorV3.class, "color");
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
@@ -165,7 +167,7 @@ int[] yellowConst = {70, 51, 100, 74};
         telemetry.addData("Position3", hand.getPosition());
         if (Math.abs(gamepad2.left_stick_x) > .05) {
 
-        //    intake.setPower(gamepad2.right_stick_x);
+            //    intake.setPower(gamepad2.right_stick_x);
 
         }
         extender.setPosition(extender.getPosition() + (gamepad2.right_stick_y * 0.001));
@@ -196,22 +198,24 @@ int[] yellowConst = {70, 51, 100, 74};
     }
 
     public void checkLimitSwitch() {
-       // double speed = 0.01; // Increase speed to 0.01 for faster movement
+        // double speed = 0.01; // Increase speed to 0.01 for faster movement
         if (arm.getPower() > 0) {
             if (limit1.getState()) {
 
                 arm.setPower(0);
             }
         }
-        if (gamepad1.dpad_left){
+
+        if (gamepad1.dpad_left) {
             twist.setPosition(0.6);
         } else if (gamepad1.dpad_right) {
             twist.setPosition(0.2);
 
-    //        if (colorSensor
+            //        if (colorSensor
         }
 
     }
+
     public void checkColorSensor() {
         int redBlockDifference = 0;
         int blueBlockDifference = 0;
@@ -223,7 +227,7 @@ int[] yellowConst = {70, 51, 100, 74};
         currentColor[2] = colorSensor.blue();
         currentColor[3] = colorSensor.alpha();
 
-        for (int i  = 0; i < 4; i++){
+        for (int i = 0; i < 4; i++) {
             redBlockDifference += Math.abs(redConst[i] - currentColor[i]);
             blueBlockDifference += Math.abs(blueConst[i] - currentColor[i]);
             yellowBlockDifference += Math.abs(yellowConst[i] - currentColor[i]);
@@ -231,13 +235,21 @@ int[] yellowConst = {70, 51, 100, 74};
         }
 
         int min = Math.min(Math.min(redBlockDifference, blueBlockDifference), yellowBlockDifference);
-        if (min == yellowBlockDifference || min==redBlockDifference) {
-            intake.setPower(1);
-        }
-        else if (min == blueBlockDifference){
-            intake.setPower(-1);
+        if (teamColor.getState()) {
+            if (min == yellowBlockDifference || min == redBlockDifference) {
+                intake.setPower(1);
+            } else if (min == blueBlockDifference) {
+                intake.setPower(-1);
+            }
+        } else {
+            if (min == yellowBlockDifference || min == blueBlockDifference) {
+                intake.setPower(1);
+            } else if (min == redBlockDifference) {
+                intake.setPower(-1);
+            }
         }
     }
+
 
 
     //takes a value and multiplies it by its absolute value, then returns that (square function but keeps the sign)
