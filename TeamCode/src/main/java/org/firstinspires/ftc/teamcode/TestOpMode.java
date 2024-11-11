@@ -10,6 +10,8 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+
+
 @TeleOp(name="Test", group="Iterative OpMode")
 public class TestOpMode extends OpMode {
     // Declare OpMode members.
@@ -19,23 +21,23 @@ public class TestOpMode extends OpMode {
     private DcMotor frontRightDrive = null;
     private DcMotor backLeftDrive = null;
     private DcMotor backRightDrive = null;
-
+//    private DcMotor slide2 = null;
+    private DcMotor intake = null;
     private DcMotor arm = null;
 
-    private Servo shoulder = null;
     private Servo elbow = null;
     private Servo hook = null;
     private Servo wrist = null;
     private Servo hand = null;
-    private DcMotor intake = null;
     private Servo extender = null;
     private Servo twist = null;
-    private DcMotor slide2 = null;
 
     private DigitalChannel limit1 = null;
     private DigitalChannel teamColor = null;
     private RevColorSensorV3 colorSensor = null;
 
+
+// Array for average color numbers to use in color sensor
     int[] redConst = {70, 100, 58, 75};
     int[] blueConst = {64, 95, 53, 70};
     int[] yellowConst = {70, 51, 100, 74};
@@ -55,15 +57,14 @@ public class TestOpMode extends OpMode {
         backLeftDrive = hardwareMap.get(DcMotor.class, "backLeftDrive");
         backRightDrive = hardwareMap.get(DcMotor.class, "backRightDrive");
         arm = hardwareMap.get(DcMotor.class, "arm");
-        shoulder = hardwareMap.get(Servo.class, "shoulder");
+        intake = hardwareMap.get(DcMotor.class, "intake");
         elbow = hardwareMap.get(Servo.class, "elbow");
         wrist = hardwareMap.get(Servo.class, "wrist");
         hook = hardwareMap.get(Servo.class, "hook");
         hand = hardwareMap.get(Servo.class, "hand");
-        intake = hardwareMap.get(DcMotor.class, "intake");
         extender = hardwareMap.get(Servo.class, "extender");
         twist = hardwareMap.get(Servo.class, "twist");
-        slide2 = hardwareMap.get(DcMotor.class, "slide2");
+//        slide2 = hardwareMap.get(DcMotor.class, "slide2");
 //        hook.setDirection(Servo.Direction.REVERSE);
         limit1 = hardwareMap.get(DigitalChannel.class, "limit1");
         teamColor = hardwareMap.get(DigitalChannel.class, "teamColor");
@@ -109,10 +110,10 @@ public class TestOpMode extends OpMode {
         telemetry.addData("Status", "Run Time: " + runtime.toString());
 
 
-        double rotation = -gamepad1.left_stick_x;
-        double movement = -gamepad1.left_stick_y;
+        double rotation = -gamepad1.left_stick_x; //turning drive chassis
+        double movement = -gamepad1.left_stick_y;//Forward/backward drive chassis
         double strafing = -gamepad1.right_stick_x;
-        double uppies = -gamepad2.left_stick_y;
+        double uppies = -gamepad2.left_stick_y;//vertical arm movement
         double slide3 = -gamepad2.right_stick_y;
 
         frontLeftDrive.setPower(0.75 * signedSquare(rotation + strafing + movement));
@@ -122,29 +123,29 @@ public class TestOpMode extends OpMode {
 
         DigitalChannel hi;
 
-        if (uppies > 0.05) {
+        if (uppies > 0.05) {//vertical arm movement
             arm.setPower(.5);
         } else if (uppies < -0.05) {
             arm.setPower(-.5);
         } else {
-            arm.setPower(0);
+           arm.setPower(0);
         }
 
-        shoulder.setPosition(shoulder.getPosition() + (gamepad2.left_stick_x * 0.01));
+        twist.setPosition(twist.getPosition() + (gamepad2.left_stick_x * 0.01));
 
 
-        if (gamepad2.x) {
+        if (gamepad2.x) {//Servo closest to body of robot that is on extender movement
             elbow.setPosition(elbow.getPosition() + 0.001);
         }
         if (gamepad2.y) {
             elbow.setPosition(elbow.getPosition() - 0.001); //TODO: increase speed
         }
-        telemetry.addData("Position", elbow.getPosition());
+        telemetry.addData("Position", elbow.getPosition());//Shows the position of elbow on drive hub
 
-        if (gamepad2.right_bumper) {
+        if (gamepad2.right_bumper) {//sets the hook to the "open" position
             hook.setPosition(.38);
         }
-        if (gamepad2.left_bumper) {
+        if (gamepad2.left_bumper) {//sets the hook to the "closed" position
             hook.setPosition(.625);
         }
 
@@ -157,12 +158,11 @@ public class TestOpMode extends OpMode {
         } //increases speed
 
 
-        if (gamepad1.right_trigger > 0.5) {
-            hand.setPosition(0);
+        if (gamepad1.right_trigger > 0.5) {//grips blocks to take up to baskets
+            hand.setPosition(0);//Open
         } else if (gamepad1.left_trigger > .5) {
-            hand.setPosition(0.2094);
-            //hand.setPosition(.25);
-            //hand.setPosition(0.525);
+            hand.setPosition(0.2094);//closed position
+
         }
         telemetry.addData("Position3", hand.getPosition());
         if (Math.abs(gamepad2.left_stick_x) > .05) {
@@ -173,11 +173,11 @@ public class TestOpMode extends OpMode {
         extender.setPosition(extender.getPosition() + (gamepad2.right_stick_y * 0.001));
 
         if (-gamepad2.right_stick_y > 0.05) {
-            slide2.setPower(.5);
+//            slide2.setPower(.5);
         } else if (-gamepad2.right_stick_y < -0.05) {
-            slide2.setPower(-.5);
+//            slide2.setPower(-.5);
         } else {
-            slide2.setPower(0);
+//            slide2.setPower(0);
 
             telemetry.addData("red", colorSensor.red());
             telemetry.addData("blue", colorSensor.blue());
@@ -200,19 +200,19 @@ public class TestOpMode extends OpMode {
     public void checkLimitSwitch() {
         // double speed = 0.01; // Increase speed to 0.01 for faster movement
         if (arm.getPower() > 0) {
-            if (limit1.getState()) {
+            if (limit1.getState()) {//checks if the limit switch has been triggered
 
                 arm.setPower(0);
             }
         }
 
-        if (gamepad1.dpad_left) {
-            twist.setPosition(0.6);
-        } else if (gamepad1.dpad_right) {
-            twist.setPosition(0.2);
-
-            //        if (colorSensor
-        }
+//        if (gamepad1.dpad_left) {
+//            twist.setPosition(0.6);
+//        } else if (gamepad1.dpad_right) {
+//            twist.setPosition(0.2);
+//
+//
+//        }
 
     }
 
@@ -227,7 +227,7 @@ public class TestOpMode extends OpMode {
         currentColor[2] = colorSensor.blue();
         currentColor[3] = colorSensor.alpha();
 
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 4; i++) {//calculates the difference in current color sensed & block color
             redBlockDifference += Math.abs(redConst[i] - currentColor[i]);
             blueBlockDifference += Math.abs(blueConst[i] - currentColor[i]);
             yellowBlockDifference += Math.abs(yellowConst[i] - currentColor[i]);
@@ -235,7 +235,7 @@ public class TestOpMode extends OpMode {
         }
 
         int min = Math.min(Math.min(redBlockDifference, blueBlockDifference), yellowBlockDifference);
-        if (teamColor.getState()) {
+        if (teamColor.getState()) {//checks for current color, activates intake motor accordingly
             if (min == yellowBlockDifference || min == redBlockDifference) {
                 intake.setPower(1);
             } else if (min == blueBlockDifference) {
