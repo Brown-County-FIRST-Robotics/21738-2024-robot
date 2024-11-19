@@ -21,7 +21,7 @@ public class TestOpMode extends OpMode {
     private DcMotor frontRightDrive = null;
     private DcMotor backLeftDrive = null;
     private DcMotor backRightDrive = null;
-//    private DcMotor slide2 = null;
+
     private DcMotor intake = null;
     private DcMotor arm = null;
 
@@ -64,11 +64,10 @@ public class TestOpMode extends OpMode {
         hand = hardwareMap.get(Servo.class, "hand");
         extender = hardwareMap.get(Servo.class, "extender");
         twist = hardwareMap.get(Servo.class, "twist");
-//        slide2 = hardwareMap.get(DcMotor.class, "slide2");
-//        hook.setDirection(Servo.Direction.REVERSE);
+
         limit1 = hardwareMap.get(DigitalChannel.class, "limit1");
         teamColor = hardwareMap.get(DigitalChannel.class, "teamColor");
-        colorSensor = hardwareMap.get(RevColorSensorV3.class, "color");
+        colorSensor = hardwareMap.get(RevColorSensorV3.class, "colorSensor");
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
@@ -79,6 +78,8 @@ public class TestOpMode extends OpMode {
         backRightDrive.setDirection(DcMotor.Direction.FORWARD);
         arm.setDirection(DcMotorSimple.Direction.FORWARD);
         intake.setDirection(DcMotorSimple.Direction.FORWARD);
+
+        arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -110,20 +111,19 @@ public class TestOpMode extends OpMode {
         telemetry.addData("Status", "Run Time: " + runtime.toString());
 
 
-        double rotation = -gamepad1.left_stick_x; //turning drive chassis
+        double rotation = gamepad1.left_stick_x; //turning drive chassis
         double movement = -gamepad1.left_stick_y;//Forward/backward drive chassis
-        double strafing = -gamepad1.right_stick_x;
-        double uppies = -gamepad2.left_stick_y;//vertical arm movement
-        double slide3 = -gamepad2.right_stick_y;
+        double strafing = gamepad1.right_stick_x;
+        double uppies = gamepad2.left_stick_y;//vertical arm movement
 
-        frontLeftDrive.setPower(0.75 * signedSquare(rotation + strafing + movement));
-        frontRightDrive.setPower(0.75 * signedSquare(rotation - strafing - movement));
-        backLeftDrive.setPower(0.75 * signedSquare(rotation - strafing + movement));
-        backRightDrive.setPower(0.75 * signedSquare(rotation + strafing - movement));
+        frontLeftDrive.setPower(-0.75 * signedSquare(rotation + strafing + movement));
+        frontRightDrive.setPower(-0.75 * signedSquare(rotation - strafing - movement));
+        backLeftDrive.setPower(-0.75 * signedSquare(rotation - strafing + movement));
+        backRightDrive.setPower(-0.75 * signedSquare(rotation + strafing - movement));
 
-        DigitalChannel hi;
+        //DigitalChannel hi;
 
-        if (uppies > 0.05) {//vertical arm movement
+        if (uppies > 0.05) {//vertiaaacal arm movement
             arm.setPower(.5);
         } else if (uppies < -0.05) {
             arm.setPower(-.5);
@@ -135,56 +135,46 @@ public class TestOpMode extends OpMode {
 
 
         if (gamepad2.x) {//Servo closest to body of robot that is on extender movement
-            elbow.setPosition(elbow.getPosition() + 0.001);
+            elbow.setPosition(0.4);//closer to 0
         }
         if (gamepad2.y) {
-            elbow.setPosition(elbow.getPosition() - 0.001); //TODO: increase speed
+            elbow.setPosition(0.7); //TODO: increase speed
         }
         telemetry.addData("Position", elbow.getPosition());//Shows the position of elbow on drive hub
 
-        if (gamepad2.right_bumper) {//sets the hook to the "open" position
-            hook.setPosition(.38);
+        if (gamepad1.a) {//sets the hook to the "closed" position
+            hook.setPosition(0.1);
         }
-        if (gamepad2.left_bumper) {//sets the hook to the "closed" position
-            hook.setPosition(.625);
+        if (gamepad1.b) {//sets the hook to the "open" position
+            hook.setPosition(.6);
         }
 
         if (gamepad2.a) {
-            wrist.setPosition(wrist.getPosition() + 0.001);
+            wrist.setPosition(wrist.getPosition() + 0.01);
         }
         if (gamepad2.b) {
-            wrist.setPosition(wrist.getPosition() - 0.001);
+            wrist.setPosition(wrist.getPosition() - 0.01);
             telemetry.addData("Position2", wrist.getPosition());
         } //increases speed
 
 
-        if (gamepad1.right_trigger > 0.5) {//grips blocks to take up to baskets
+        if (gamepad1.x) {//grips blocks to take up to baskets
             hand.setPosition(0);//Open
-        } else if (gamepad1.left_trigger > .5) {
+        } else if (gamepad1.y) {
             hand.setPosition(0.2094);//closed position
 
         }
         telemetry.addData("Position3", hand.getPosition());
-        if (Math.abs(gamepad2.left_stick_x) > .05) {
 
-            //    intake.setPower(gamepad2.right_stick_x);
+        extender.setPosition((gamepad2.right_stick_y/2) + 0.5);
+        // ToDo: implement limit switch for extender
 
-        }
-        extender.setPosition(extender.getPosition() + (gamepad2.right_stick_y * 0.001));
-
-        if (-gamepad2.right_stick_y > 0.05) {
-//            slide2.setPower(.5);
-        } else if (-gamepad2.right_stick_y < -0.05) {
-//            slide2.setPower(-.5);
-        } else {
-//            slide2.setPower(0);
 
             telemetry.addData("red", colorSensor.red());
             telemetry.addData("blue", colorSensor.blue());
             telemetry.addData("green", colorSensor.green());
             telemetry.addData("alpha", colorSensor.alpha());
 
-        }
 
         checkLimitSwitch();
         checkColorSensor();
@@ -237,15 +227,15 @@ public class TestOpMode extends OpMode {
         int min = Math.min(Math.min(redBlockDifference, blueBlockDifference), yellowBlockDifference);
         if (teamColor.getState()) {//checks for current color, activates intake motor accordingly
             if (min == yellowBlockDifference || min == redBlockDifference) {
-                intake.setPower(1);
-            } else if (min == blueBlockDifference) {
                 intake.setPower(-1);
+            } else if (min == blueBlockDifference) {
+                intake.setPower(1);
             }
         } else {
             if (min == yellowBlockDifference || min == blueBlockDifference) {
-                intake.setPower(1);
-            } else if (min == redBlockDifference) {
                 intake.setPower(-1);
+            } else if (min == redBlockDifference) {
+                intake.setPower(1);
             }
         }
     }
