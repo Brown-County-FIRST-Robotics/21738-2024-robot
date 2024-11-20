@@ -72,9 +72,9 @@ public class TestOpMode extends OpMode {
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
-        frontLeftDrive.setDirection(DcMotor.Direction.FORWARD);
+        frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         frontRightDrive.setDirection(DcMotor.Direction.FORWARD);
-        backLeftDrive.setDirection(DcMotor.Direction.FORWARD);
+        backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         backRightDrive.setDirection(DcMotor.Direction.FORWARD);
         arm.setDirection(DcMotorSimple.Direction.FORWARD);
         intake.setDirection(DcMotorSimple.Direction.FORWARD);
@@ -111,9 +111,9 @@ public class TestOpMode extends OpMode {
         telemetry.addData("Status", "Run Time: " + runtime.toString());
 
 
-        double rotation = gamepad1.left_stick_x; //turning drive chassis
-        double movement = -gamepad1.left_stick_y;//Forward/backward drive chassis
-        double strafing = gamepad1.right_stick_x;
+        double rotation = gamepad1.left_stick_y; //turning drive chassis
+        double movement = -gamepad1.left_stick_x;//Forward/backward drive chassis
+        double strafing = -gamepad1.right_stick_x;
         double uppies = gamepad2.left_stick_y;//vertical arm movement
 
         frontLeftDrive.setPower(-0.75 * signedSquare(rotation + strafing + movement));
@@ -123,7 +123,7 @@ public class TestOpMode extends OpMode {
 
         //DigitalChannel hi;
 
-        if (uppies > 0.05) {//vertiaaacal arm movement
+        if (uppies > 0.05) {//vertical arm movement
             arm.setPower(.5);
         } else if (uppies < -0.05) {
             arm.setPower(-.5);
