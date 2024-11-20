@@ -1,15 +1,16 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 
 @TeleOp(name="Test", group="Iterative OpMode")
 public class TestOpMode extends OpMode
@@ -22,12 +23,25 @@ public class TestOpMode extends OpMode
     private DcMotor backLeftDrive = null;
     private DcMotor backRightDrive = null;
 
-  //  private DcMotor arm = null;
+    private DcMotor intake = null;
+    private DcMotor arm = null;
 
-    private Servo shoulder = null;
     private Servo elbow = null;
     private Servo hook = null;
+    private Servo wrist = null;
+    private Servo hand = null;
+    private Servo extender = null;
+    private Servo twist = null;
 
+    private DigitalChannel limit1 = null;
+    private DigitalChannel teamColor = null;
+    private RevColorSensorV3 colorSensor = null;
+
+
+// Array for average color numbers to use in color sensor
+    int[] redConst = {70, 100, 58, 75};
+    int[] blueConst = {64, 95, 53, 70};
+    int[] yellowConst = {70, 51, 100, 74};
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -39,25 +53,34 @@ public class TestOpMode extends OpMode
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
-        frontLeftDrive  = hardwareMap.get(DcMotor.class, "frontLeftDrive");
+        frontLeftDrive = hardwareMap.get(DcMotor.class, "frontLeftDrive");
         frontRightDrive = hardwareMap.get(DcMotor.class, "frontRightDrive");
-        backLeftDrive  = hardwareMap.get(DcMotor.class, "backLeftDrive");
+        backLeftDrive = hardwareMap.get(DcMotor.class, "backLeftDrive");
         backRightDrive = hardwareMap.get(DcMotor.class, "backRightDrive");
-        //arm = hardwareMap.get(DcMotor.class, "arm");
-        shoulder = hardwareMap.get(Servo.class,"shoulder");
+        arm = hardwareMap.get(DcMotor.class, "arm");
+        intake = hardwareMap.get(DcMotor.class, "intake");
         elbow = hardwareMap.get(Servo.class, "elbow");
+        wrist = hardwareMap.get(Servo.class, "wrist");
         hook = hardwareMap.get(Servo.class, "hook");
-//        hook.setDirection(Servo.Direction.REVERSE);
+        hand = hardwareMap.get(Servo.class, "hand");
+        extender = hardwareMap.get(Servo.class, "extender");
+        twist = hardwareMap.get(Servo.class, "twist");
 
+        limit1 = hardwareMap.get(DigitalChannel.class, "limit1");
+        teamColor = hardwareMap.get(DigitalChannel.class, "teamColor");
+        colorSensor = hardwareMap.get(RevColorSensorV3.class, "colorSensor");
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
-        frontLeftDrive.setDirection(DcMotor.Direction.FORWARD);
+        frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         frontRightDrive.setDirection(DcMotor.Direction.FORWARD);
-        backLeftDrive.setDirection(DcMotor.Direction.FORWARD);
+        backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         backRightDrive.setDirection(DcMotor.Direction.FORWARD);
-    //    arm.setDirection(DcMotorSimple.Direction.FORWARD);
+        arm.setDirection(DcMotorSimple.Direction.FORWARD);
+        intake.setDirection(DcMotorSimple.Direction.FORWARD);
+
+        arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -86,45 +109,76 @@ public class TestOpMode extends OpMode
         // Setup a variable for each drive wheel to save power level for telemetry
 
 
-
         telemetry.addData("Status", "Run Time: " + runtime.toString());
 
 
-        double rotation = -gamepad1.left_stick_x;
-        double movement = -gamepad1.left_stick_y;
+        double rotation = gamepad1.left_stick_y; //turning drive chassis
+        double movement = -gamepad1.left_stick_x;//Forward/backward drive chassis
         double strafing = -gamepad1.right_stick_x;
-        double uppies = -gamepad2.left_stick_y;
+        double uppies = gamepad2.left_stick_y;//vertical arm movement
 
-        frontLeftDrive.setPower(0.75 * signedSquare(rotation + strafing + movement));
-        frontRightDrive.setPower(0.75 * signedSquare(rotation - strafing - movement));
-        backLeftDrive.setPower(0.75 * signedSquare(rotation - strafing + movement));
-        backRightDrive.setPower(0.75 * signedSquare(rotation + strafing - movement));
+        frontLeftDrive.setPower(-0.75 * signedSquare(rotation + strafing + movement));
+        frontRightDrive.setPower(-0.75 * signedSquare(rotation - strafing - movement));
+        backLeftDrive.setPower(-0.75 * signedSquare(rotation - strafing + movement));
+        backRightDrive.setPower(-0.75 * signedSquare(rotation + strafing - movement));
 
-        if (uppies > 0.05){
-            //arm.setPower(.5);
+        //DigitalChannel hi;
+
+        if (uppies > 0.05) {//vertical arm movement
+            arm.setPower(.5);
         } else if (uppies < -0.05) {
             //arm.setPower(-.5);
         } else {
-            //arm.setPower(0);
+           arm.setPower(0);
         }
 
-        shoulder.setPosition(shoulder.getPosition() + (gamepad2.left_stick_x * 0.01));
+        twist.setPosition(twist.getPosition() + (gamepad2.left_stick_x * 0.01));
 
 
-        if (gamepad2.x) {
-            elbow.setPosition(elbow.getPosition() +0.001);
+        if (gamepad2.x) {//Servo closest to body of robot that is on extender movement
+            elbow.setPosition(0.4);//closer to 0
         }
         if (gamepad2.y) {
-            elbow.setPosition(elbow.getPosition() -0.001); //TODO: increase speed
+            elbow.setPosition(0.7); //TODO: increase speed
         }
-        telemetry.addData("Position", elbow.getPosition());
+        telemetry.addData("Position", elbow.getPosition());//Shows the position of elbow on drive hub
+
+        if (gamepad1.a) {//sets the hook to the "closed" position
+            hook.setPosition(0.1);
+        }
+        if (gamepad1.b) {//sets the hook to the "open" position
+            hook.setPosition(.6);
+        }
+
+        if (gamepad2.a) {
+            wrist.setPosition(wrist.getPosition() + 0.01);
+        }
+        if (gamepad2.b) {
+            wrist.setPosition(wrist.getPosition() - 0.01);
+            telemetry.addData("Position2", wrist.getPosition());
+        } //increases speed
 
 
-        if (gamepad2.right_bumper) {
-            hook.setPosition(.38);}
-        if (gamepad2.left_bumper) {
-            hook.setPosition(.625); }
-        telemetry.addData("Posi", hook.getPosition());
+        if (gamepad1.x) {//grips blocks to take up to baskets
+            hand.setPosition(0);//Open
+        } else if (gamepad1.y) {
+            hand.setPosition(0.2094);//closed position
+
+        }
+        telemetry.addData("Position3", hand.getPosition());
+
+        extender.setPosition((gamepad2.right_stick_y/2) + 0.5);
+        // ToDo: implement limit switch for extender
+
+
+            telemetry.addData("red", colorSensor.red());
+            telemetry.addData("blue", colorSensor.blue());
+            telemetry.addData("green", colorSensor.green());
+            telemetry.addData("alpha", colorSensor.alpha());
+
+
+        checkLimitSwitch();
+        checkColorSensor();
     }
 //0.3689
 //    .625
@@ -134,6 +188,61 @@ public class TestOpMode extends OpMode
     @Override
     public void stop() {
     }
+
+    public void checkLimitSwitch() {
+        // double speed = 0.01; // Increase speed to 0.01 for faster movement
+        if (arm.getPower() > 0) {
+            if (limit1.getState()) {//checks if the limit switch has been triggered
+
+                arm.setPower(0);
+            }
+        }
+
+//        if (gamepad1.dpad_left) {
+//            twist.setPosition(0.6);
+//        } else if (gamepad1.dpad_right) {
+//            twist.setPosition(0.2);
+//
+//
+//        }
+
+    }
+
+    public void checkColorSensor() {
+        int redBlockDifference = 0;
+        int blueBlockDifference = 0;
+        int yellowBlockDifference = 0;
+
+        int[] currentColor = new int[4];
+        currentColor[0] = colorSensor.red();
+        currentColor[1] = colorSensor.green();
+        currentColor[2] = colorSensor.blue();
+        currentColor[3] = colorSensor.alpha();
+
+        for (int i = 0; i < 4; i++) {//calculates the difference in current color sensed & block color
+            redBlockDifference += Math.abs(redConst[i] - currentColor[i]);
+            blueBlockDifference += Math.abs(blueConst[i] - currentColor[i]);
+            yellowBlockDifference += Math.abs(yellowConst[i] - currentColor[i]);
+
+        }
+
+        int min = Math.min(Math.min(redBlockDifference, blueBlockDifference), yellowBlockDifference);
+        if (teamColor.getState()) {//checks for current color, activates intake motor accordingly
+            if (min == yellowBlockDifference || min == redBlockDifference) {
+                intake.setPower(-1);
+            } else if (min == blueBlockDifference) {
+                intake.setPower(1);
+            }
+        } else {
+            if (min == yellowBlockDifference || min == blueBlockDifference) {
+                intake.setPower(-1);
+            } else if (min == redBlockDifference) {
+                intake.setPower(1);
+            }
+        }
+    }
+
+
 
     //takes a value and multiplies it by its absolute value, then returns that (square function but keeps the sign)
     private double signedSquare(double x) {
