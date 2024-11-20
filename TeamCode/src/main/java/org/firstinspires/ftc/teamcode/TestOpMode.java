@@ -13,7 +13,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 
 @TeleOp(name="Test", group="Iterative OpMode")
-public class TestOpMode extends OpMode {
+public class TestOpMode extends OpMode
+{
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
 
@@ -126,7 +127,7 @@ public class TestOpMode extends OpMode {
         if (uppies > 0.05) {//vertical arm movement
             arm.setPower(.5);
         } else if (uppies < -0.05) {
-            arm.setPower(-.5);
+            //arm.setPower(-.5);
         } else {
            arm.setPower(0);
         }
@@ -179,7 +180,8 @@ public class TestOpMode extends OpMode {
         checkLimitSwitch();
         checkColorSensor();
     }
-
+//0.3689
+//    .625
     /*
      * Code to run ONCE after the driver hits STOP
      */
