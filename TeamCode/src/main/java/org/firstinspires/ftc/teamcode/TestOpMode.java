@@ -38,10 +38,10 @@ public class TestOpMode extends OpMode
     private RevColorSensorV3 colorSensor = null;
 
 
-// Array for average color numbers to use in color sensor
-    int[] redConst = {70, 100, 58, 75};
-    int[] blueConst = {64, 95, 53, 70};
-    int[] yellowConst = {70, 51, 100, 74};
+// Array for average color numbers to use in color sensor, arranged RGBA
+    int[] redConst = {300, 88, 164, 184};
+    int[] blueConst = {72, 305, 141, 172};
+    int[] yellowConst = {485, 139, 577, 400};
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -227,17 +227,35 @@ public class TestOpMode extends OpMode
         }
 
         int min = Math.min(Math.min(redBlockDifference, blueBlockDifference), yellowBlockDifference);
+
+        if (min == yellowBlockDifference) {
+            telemetry.addData("Color", "Yellow");
+            telemetry.addData("Color Difference", yellowBlockDifference);
+        }
+        else if (min == redBlockDifference) {
+            telemetry.addData("Color", "Red");
+            telemetry.addData("Color Difference", redBlockDifference);
+        }
+        else if (min == blueBlockDifference) {
+            telemetry.addData("Color", "Blue");
+            telemetry.addData("Color Difference", blueBlockDifference);
+        }
+
         if (teamColor.getState()) {//checks for current color, activates intake motor accordingly
             if (min == yellowBlockDifference || min == redBlockDifference) {
                 intake.setPower(-1);
+                telemetry.addData("colorSensorTest",1);
             } else if (min == blueBlockDifference) {
                 intake.setPower(1);
+                telemetry.addData("colorSensorTest",2);
             }
         } else {
             if (min == yellowBlockDifference || min == blueBlockDifference) {
                 intake.setPower(-1);
+                telemetry.addData("colorSensorTest",3);
             } else if (min == redBlockDifference) {
                 intake.setPower(1);
+                telemetry.addData("colorSensorTest",4);
             }
         }
     }
