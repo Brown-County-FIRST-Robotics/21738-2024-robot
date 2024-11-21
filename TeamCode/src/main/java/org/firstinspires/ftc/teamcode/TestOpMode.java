@@ -42,6 +42,7 @@ public class TestOpMode extends OpMode
     int[] redConst = {300, 88, 164, 184};
     int[] blueConst = {72, 305, 141, 172};
     int[] yellowConst = {485, 139, 577, 400};
+    int[] blackConst = {58, 83, 101, 81};
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -212,6 +213,7 @@ public class TestOpMode extends OpMode
         int redBlockDifference = 0;
         int blueBlockDifference = 0;
         int yellowBlockDifference = 0;
+        int blackDifference = 0;
 
         int[] currentColor = new int[4];
         currentColor[0] = colorSensor.red();
@@ -223,10 +225,11 @@ public class TestOpMode extends OpMode
             redBlockDifference += Math.abs(redConst[i] - currentColor[i]);
             blueBlockDifference += Math.abs(blueConst[i] - currentColor[i]);
             yellowBlockDifference += Math.abs(yellowConst[i] - currentColor[i]);
+            blackDifference += Math.abs(blackConst[i] - currentColor[i]);
 
         }
 
-        int min = Math.min(Math.min(redBlockDifference, blueBlockDifference), yellowBlockDifference);
+        int min = Math.min(Math.min(redBlockDifference, blueBlockDifference), Math.min(yellowBlockDifference, blackDifference));
 
         if (min == yellowBlockDifference) {
             telemetry.addData("Color", "Yellow");
@@ -240,23 +243,32 @@ public class TestOpMode extends OpMode
             telemetry.addData("Color", "Blue");
             telemetry.addData("Color Difference", blueBlockDifference);
         }
+        else if (min == blackDifference) {
+            telemetry.addData("Color", "Black");
+            telemetry.addData("Color Difference", blackDifference);
+        }
 
-        if (teamColor.getState()) {//checks for current color, activates intake motor accordingly
-            if (min == yellowBlockDifference || min == redBlockDifference) {
-                intake.setPower(-1);
-                telemetry.addData("colorSensorTest",1);
-            } else if (min == blueBlockDifference) {
-                intake.setPower(1);
-                telemetry.addData("colorSensorTest",2);
+        if (min != blackDifference) {
+            if (teamColor.getState()) {//checks for current color, activates intake motor accordingly
+                if (min == yellowBlockDifference || min == redBlockDifference) {
+                    intake.setPower(-1);
+                    telemetry.addData("colorSensorTest", 1);
+                } else if (min == blueBlockDifference) {
+                    intake.setPower(1);
+                    telemetry.addData("colorSensorTest", 2);
+                }
+            } else {
+                if (min == yellowBlockDifference || min == blueBlockDifference) {
+                    intake.setPower(-1);
+                    telemetry.addData("colorSensorTest", 3);
+                } else if (min == redBlockDifference) {
+                    intake.setPower(1);
+                    telemetry.addData("colorSensorTest", 4);
+                }
             }
         } else {
-            if (min == yellowBlockDifference || min == blueBlockDifference) {
-                intake.setPower(-1);
-                telemetry.addData("colorSensorTest",3);
-            } else if (min == redBlockDifference) {
-                intake.setPower(1);
-                telemetry.addData("colorSensorTest",4);
-            }
+            intake.setPower(0);
+            telemetry.addData("colorSensorTest", 5);
         }
     }
 
