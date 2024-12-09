@@ -13,8 +13,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 
 @TeleOp(name="Test", group="Iterative OpMode")
-public class TestOpMode extends OpMode
-{
+public class TestOpMode extends OpMode {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
 
@@ -37,10 +36,12 @@ public class TestOpMode extends OpMode
     private DigitalChannel teamColor = null;
     //private DigitalChannel LED = null;
     private RevColorSensorV3 colorSensor = null;
-   //private RevColorSensorV3 colorSensorLight = null;
+    //private RevColorSensorV3 colorSensorLight = null;
+    private DigitalChannel limitFront = null;
+    private DigitalChannel limitBack = null;
 
 
-// Array for average color numbers to use in color sensor, arranged RGBA
+    // Array for average color numbers to use in color sensor, arranged RGBA
     int[] redConst = {300, 88, 164, 184};
     int[] blueConst = {72, 305, 141, 172};
     int[] yellowConst = {485, 139, 577, 400};
@@ -70,10 +71,12 @@ public class TestOpMode extends OpMode
         twist = hardwareMap.get(Servo.class, "twist");
 
         limit1 = hardwareMap.get(DigitalChannel.class, "limit1");
+        limitFront = hardwareMap.get(DigitalChannel.class, "limitFront");
+        limitBack = hardwareMap.get(DigitalChannel.class, "limitBack");
         teamColor = hardwareMap.get(DigitalChannel.class, "teamColor");
-    //    LED = hardwareMap.get(DigitalChannel.class, "LED");
+        //    LED = hardwareMap.get(DigitalChannel.class, "LED");
         colorSensor = hardwareMap.get(RevColorSensorV3.class, "colorSensor");
- //  colorSensorLight = hardwareMap.get(RevColorSensorV3.class, "colorSensorLight");
+        //  colorSensorLight = hardwareMap.get(RevColorSensorV3.class, "colorSensorLight");
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
@@ -128,18 +131,20 @@ public class TestOpMode extends OpMode
         backRightDrive.setPower(-0.75 * signedSquare(rotation + strafing - movement));
 
 
-
         if (uppies > 0.05) {//vertical arm movement
             arm.setPower(.5);
         } else if (uppies < -0.05) {
-            //arm.setPower(-.5);
+            arm.setPower(-.5);
         } else {
-           arm.setPower(0);
+            arm.setPower(0);
         }
 
-        twist.setPosition(twist.getPosition() + (gamepad2.left_stick_x * 0.01));
-
-
+        //  twist.setPosition(twist.getPosition() + (gamepad2.left_stick_x * 0.01));
+        double joystickInput = gamepad2.right_stick_x;
+// Clamps joystick input to the range [-1, 1]
+        joystickInput = Math.max(-1.0, Math.min(1.0, joystickInput));
+        twist.setPosition(twist.getPosition() + (joystickInput * 0.01));
+        telemetry.addData("imTiredOfDoingPrintStatements", twist.getPosition());
         if (gamepad2.x) {
             elbow.setPosition(0.4);//closer to 0
         }
@@ -163,19 +168,32 @@ public class TestOpMode extends OpMode
 
         } //increases speed
         telemetry.addData("PositionWrist", wrist.getPosition());
- //       hand.setPosition(hand.getPosition() + (gamepad1.right_stick_y * 0.01));
+        //       hand.setPosition(hand.getPosition() + (gamepad1.right_stick_y * 0.01));
 
-       if (gamepad1.x) {//grips blocks to take up to baskets
-           hand.setPosition(0.8117);//Open
+        if (gamepad1.x) {//grips blocks to take up to baskets
+            hand.setPosition(0.8117);//Open
         } else if (gamepad1.y) {
-            hand.setPosition(0.87);//closed position
+            hand.setPosition(0.88);//closed position
 
         }
         telemetry.addData("PositionHand", hand.getPosition());
-        extender.setPosition(extender.getPosition() + (gamepad2.right_stick_y * 0.01));
-    //    extender.setPosition((gamepad2.right_stick_y/2) + 0.6);
-        // ToDo: implement limit switch for extender
-telemetry.addData("PositionExtender", extender.getPosition());
+       double extenderSpeed = 0.5 + (gamepad2.right_stick_y * 0.1);
+        if (gamepad2.right_stick_y > 0 && !limitFront.getState()){
+            extender.setPosition(extenderSpeed);
+
+
+        }
+        else if (gamepad2.right_stick_y < 0 && !limitBack.getState()){
+            extender.setPosition(extenderSpeed);
+        }
+        else {
+            extender.setPosition(0.5);
+        }
+   //     extender.setPosition(extender.getPosition() + (gamepad2.right_stick_y * 0.01));
+telemetry.addData("PositionExtender",extender.getPosition());
+
+
+
 
             telemetry.addData("red", colorSensor.red());
             telemetry.addData("blue", colorSensor.blue());
