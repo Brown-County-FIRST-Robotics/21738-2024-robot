@@ -39,12 +39,14 @@ public class TestOpMode extends OpMode
     private DigitalChannel LED = null;
     private RevColorSensorV3 colorSensor = null;
     private DigitalChannel laser = null;
-
+private DigitalChannel limitBack = null;
+private DigitalChannel limitFront = null;
 // Array for average color numbers to use in color sensor, arranged RGBA
     int[] redConst = {300, 88, 164, 184};
     int[] blueConst = {72, 305, 141, 172};
     int[] yellowConst = {485, 139, 577, 400};
     int[] blackConst = {58, 83, 101, 81};
+
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -68,7 +70,8 @@ public class TestOpMode extends OpMode
         hand = hardwareMap.get(Servo.class, "hand");
         extender = hardwareMap.get(Servo.class, "extender");
         twist = hardwareMap.get(Servo.class, "twist");
-
+limitBack = hardwareMap.get(DigitalChannel.class, "limitBack");
+limitFront = hardwareMap.get(DigitalChannel.class, "limitFront");
         limit1 = hardwareMap.get(DigitalChannel.class, "limit1");
         teamColor = hardwareMap.get(DigitalChannel.class, "teamColor");
         LED = hardwareMap.get(DigitalChannel.class, "LED");
@@ -138,7 +141,7 @@ public class TestOpMode extends OpMode
            arm.setPower(0);
         }
 
-        twist.setPosition(twist.getPosition() + (gamepad2.left_stick_x * 0.01));
+        twist.setPosition(twist.getPosition() + (gamepad2.right_stick_x* 0.01));
 
 
         if (gamepad2.x) {
@@ -177,12 +180,28 @@ public class TestOpMode extends OpMode
 
         telemetry.addData("BlockSensor", laser.getState());
         telemetry.addData("PositionHand", hand.getPosition());
-       extender.setPosition(extender.getPosition() + (gamepad2.right_stick_y * 0.01));
-      //  extender.setPosition((gamepad2.right_stick_y/2) + 0.6);
-        // ToDo: implement limit switch for extender
-telemetry.addData("PositionExtender", extender.getPosition());
 
-            telemetry.addData("red", colorSensor.red());
+        double extenderSpeed = 0.5 + (-gamepad2.right_stick_y * 0.5);
+        if (gamepad2.right_stick_y > 0 && limitFront.getState()){ //moving forward
+            extender.setPosition(extenderSpeed);
+            telemetry.addData("extenderDir", 0);
+
+        }
+        else if (gamepad2.right_stick_y < 0 && limitBack.getState()){ //moving back
+            extender.setPosition(extenderSpeed);
+            telemetry.addData("extenderDir", 1);
+        }
+        else { //not moving
+            extender.setPosition(0.5);
+            telemetry.addData("extenderDir", 2);
+            telemetry.addData("frontExtender", limitFront.getState());
+            telemetry.addData("backExtender", limitBack.getState());
+
+        }
+        //     extender.setPosition(extender.getPosition() + (gamepad2.right_stick_y * 0.01));
+        telemetry.addData("PositionExtender",extender.getPosition());
+
+        telemetry.addData("red", colorSensor.red());
             telemetry.addData("blue", colorSensor.blue());
             telemetry.addData("green", colorSensor.green());
             telemetry.addData("alpha", colorSensor.alpha());
