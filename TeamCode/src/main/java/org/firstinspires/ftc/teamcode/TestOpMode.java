@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.rev.RevColorSensorV3;
+import com.qualcomm.hardware.rev.RevTouchSensor;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -35,10 +36,9 @@ public class TestOpMode extends OpMode
 
     private DigitalChannel limit1 = null;
     private DigitalChannel teamColor = null;
-    //private DigitalChannel LED = null;
+    private DigitalChannel LED = null;
     private RevColorSensorV3 colorSensor = null;
-   //private RevColorSensorV3 colorSensorLight = null;
-
+    private DigitalChannel laser = null;
 
 // Array for average color numbers to use in color sensor, arranged RGBA
     int[] redConst = {300, 88, 164, 184};
@@ -71,9 +71,11 @@ public class TestOpMode extends OpMode
 
         limit1 = hardwareMap.get(DigitalChannel.class, "limit1");
         teamColor = hardwareMap.get(DigitalChannel.class, "teamColor");
-    //    LED = hardwareMap.get(DigitalChannel.class, "LED");
+        LED = hardwareMap.get(DigitalChannel.class, "LED");
         colorSensor = hardwareMap.get(RevColorSensorV3.class, "colorSensor");
- //  colorSensorLight = hardwareMap.get(RevColorSensorV3.class, "colorSensorLight");
+        laser = hardwareMap.get(DigitalChannel.class, "laser");
+
+        LED.setMode(DigitalChannel.Mode.OUTPUT);
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
@@ -115,7 +117,6 @@ public class TestOpMode extends OpMode
 
 
         telemetry.addData("Status", "Run Time: " + runtime.toString());
-
 
         double rotation = gamepad1.left_stick_y; //turning drive chassis
         double movement = -gamepad1.left_stick_x;//Forward/backward drive chassis
@@ -171,9 +172,13 @@ public class TestOpMode extends OpMode
             hand.setPosition(0.87);//closed position
 
         }
+
+          LED.setState(laser.getState());
+
+        telemetry.addData("BlockSensor", laser.getState());
         telemetry.addData("PositionHand", hand.getPosition());
-        extender.setPosition(extender.getPosition() + (gamepad2.right_stick_y * 0.01));
-    //    extender.setPosition((gamepad2.right_stick_y/2) + 0.6);
+       extender.setPosition(extender.getPosition() + (gamepad2.right_stick_y * 0.01));
+      //  extender.setPosition((gamepad2.right_stick_y/2) + 0.6);
         // ToDo: implement limit switch for extender
 telemetry.addData("PositionExtender", extender.getPosition());
 
