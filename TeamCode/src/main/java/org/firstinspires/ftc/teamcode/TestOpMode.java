@@ -133,7 +133,7 @@ public class TestOpMode extends OpMode
         if (uppies > 0.05) {//vertical arm movement
             arm.setPower(.5);
         } else if (uppies < -0.05) {
-            //arm.setPower(-.5);
+            arm.setPower(-.5);
         } else {
            arm.setPower(0);
         }
