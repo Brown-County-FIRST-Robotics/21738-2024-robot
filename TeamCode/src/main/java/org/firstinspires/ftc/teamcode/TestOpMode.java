@@ -145,10 +145,10 @@ limitFront = hardwareMap.get(DigitalChannel.class, "limitFront");
 
 
         if (gamepad2.x) {
-            elbow.setPosition(0.4);//closer to 0
+            elbow.setPosition(0.2);//closer to 0
         }
         if (gamepad2.y) {
-            elbow.setPosition(0.7); //TODO: increase speed
+            elbow.setPosition(0.65); //TODO: increase speed
         }
         telemetry.addData("Position", elbow.getPosition());//Shows the position of elbow on drive hub
 
