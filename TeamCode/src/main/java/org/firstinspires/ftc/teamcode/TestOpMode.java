@@ -14,8 +14,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 
 @TeleOp(name="Test", group="Iterative OpMode")
-public class TestOpMode extends OpMode
-{
+public class TestOpMode extends OpMode {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
 
@@ -73,6 +72,8 @@ private DigitalChannel limitFront = null;
 limitBack = hardwareMap.get(DigitalChannel.class, "limitBack");
 limitFront = hardwareMap.get(DigitalChannel.class, "limitFront");
         limit1 = hardwareMap.get(DigitalChannel.class, "limit1");
+        limitFront = hardwareMap.get(DigitalChannel.class, "limitFront");
+        limitBack = hardwareMap.get(DigitalChannel.class, "limitBack");
         teamColor = hardwareMap.get(DigitalChannel.class, "teamColor");
         LED = hardwareMap.get(DigitalChannel.class, "LED");
         colorSensor = hardwareMap.get(RevColorSensorV3.class, "colorSensor");
@@ -132,13 +133,12 @@ limitFront = hardwareMap.get(DigitalChannel.class, "limitFront");
         backRightDrive.setPower(-0.75 * signedSquare(rotation + strafing - movement));
 
 
-
         if (uppies > 0.05) {//vertical arm movement
             arm.setPower(.5);
         } else if (uppies < -0.05) {
             arm.setPower(-.5);
         } else {
-           arm.setPower(0);
+            arm.setPower(0);
         }
 
         twist.setPosition(twist.getPosition() + (gamepad2.right_stick_x* 0.01));
@@ -167,12 +167,12 @@ limitFront = hardwareMap.get(DigitalChannel.class, "limitFront");
 
         } //increases speed
         telemetry.addData("PositionWrist", wrist.getPosition());
- //       hand.setPosition(hand.getPosition() + (gamepad1.right_stick_y * 0.01));
+        //       hand.setPosition(hand.getPosition() + (gamepad1.right_stick_y * 0.01));
 
-       if (gamepad1.x) {//grips blocks to take up to baskets
-           hand.setPosition(0.8117);//Open
+        if (gamepad1.x) {//grips blocks to take up to baskets
+            hand.setPosition(0.8117);//Open
         } else if (gamepad1.y) {
-            hand.setPosition(0.87);//closed position
+            hand.setPosition(0.88);//closed position
 
         }
 
