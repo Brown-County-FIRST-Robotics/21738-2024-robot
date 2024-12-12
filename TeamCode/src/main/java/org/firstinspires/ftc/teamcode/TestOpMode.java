@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import java.util.concurrent.TimeUnit;
 
 
 @TeleOp(name="Test", group="Iterative OpMode")
@@ -134,18 +135,21 @@ limitFront = hardwareMap.get(DigitalChannel.class, "limitFront");
 
 
         if (uppies > 0.05) {//vertical arm movement
-            arm.setPower(.5);
+            arm.setPower(.7);
         } else if (uppies < -0.05) {
-            arm.setPower(-.5);
+            arm.setPower(-.7);
         } else {
             arm.setPower(0);
         }
-
-        twist.setPosition(twist.getPosition() + (gamepad2.right_stick_x* 0.01));
-
-
+        if (gamepad2.right_bumper) {
+            twist.setPosition(0.62);//closer to 0
+        }
+        if (gamepad2.left_bumper) {
+            twist.setPosition(0.0); //TODO: increase speed
+}
+        telemetry.addData("imTiredOfDoingPrintStatements", twist.getPosition());
         if (gamepad2.x) {
-            elbow.setPosition(0.2);//closer to 0
+            elbow.setPosition(0.1);//closer to 0
         }
         if (gamepad2.y) {
             elbow.setPosition(0.65); //TODO: increase speed
