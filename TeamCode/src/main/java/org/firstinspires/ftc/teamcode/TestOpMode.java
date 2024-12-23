@@ -137,7 +137,7 @@ limitFront = hardwareMap.get(DigitalChannel.class, "limitFront");
         if (uppies > 0.05) {//vertical arm movement
             arm.setPower(.7);
         } else if (uppies < -0.05) {
-            arm.setPower(-.85);
+            arm.setPower(-.9);
         } else {
             arm.setPower(0);
         }
