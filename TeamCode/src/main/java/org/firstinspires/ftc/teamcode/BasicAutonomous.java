@@ -86,8 +86,6 @@ private DcMotor arm = null;
     static final double     WHEEL_DIAMETER_INCHES   = 4.0 ;     // For figuring circumference
     static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
                                                       (WHEEL_DIAMETER_INCHES * 3.1415);
-    static final double     DRIVE_SPEED             = 0.6;
-    static final double     TURN_SPEED              = 0.5;
 
 
     @Override
@@ -119,6 +117,8 @@ arm = hardwareMap.get(DcMotor.class, "arm");
         backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
+        arm.setPower(0.7);
+
         // Send telemetry message to indicate successful Encoder reset
         telemetry.addData("Starting at",  "%7d :%7d",
                           frontRightDrive.getCurrentPosition(),
@@ -134,14 +134,14 @@ arm = hardwareMap.get(DcMotor.class, "arm");
         waitForStart();
 
 
-        encoderDrive(0.5, 12, 12, 5);
+      //  encoderDrive(0.5, 12, 12, 5);
 
        // encoderDrive(TURN_SPEED, -5, 5, 1);
         arm.setDirection(DcMotor.Direction.FORWARD);
         arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        arm.setTargetPosition(1000);
+        arm.setTargetPosition(-6000);
         arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        arm.setPower(0.7);
+
 //encoderDrive(DRIVE_SPEED, 12, 12, 1.5);
 //        armMotor.setPower(0.5); // Set arm motor power to 50% forward
 
