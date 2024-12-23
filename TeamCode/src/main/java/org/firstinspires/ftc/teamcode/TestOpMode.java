@@ -137,7 +137,7 @@ limitFront = hardwareMap.get(DigitalChannel.class, "limitFront");
         if (uppies > 0.05) {//vertical arm movement
             arm.setPower(.7);
         } else if (uppies < -0.05) {
-            arm.setPower(-.7);
+            arm.setPower(-.85);
         } else {
             arm.setPower(0);
         }
@@ -149,10 +149,10 @@ limitFront = hardwareMap.get(DigitalChannel.class, "limitFront");
 }
         telemetry.addData("imTiredOfDoingPrintStatements", twist.getPosition());
         if (gamepad2.x) {
-            elbow.setPosition(0.1);//closer to 0
+            elbow.setPosition(0.05);//down
         }
         if (gamepad2.y) {
-            elbow.setPosition(0.65); //TODO: increase speed
+            elbow.setPosition(0.65); //up
         }
         telemetry.addData("Position", elbow.getPosition());//Shows the position of elbow on drive hub
 
