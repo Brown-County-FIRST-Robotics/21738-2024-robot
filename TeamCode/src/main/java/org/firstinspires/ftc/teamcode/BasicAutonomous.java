@@ -26,6 +26,34 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+/* Copyright (c) 2017 FIRST. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted (subject to the limitations in the disclaimer below) provided that
+ * the following conditions are met:
+ *
+ * Redistributions of source code must retain the above copyright notice, this list
+ * of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright notice, this
+ * list of conditions and the following disclaimer in the documentation and/or
+ * other materials provided with the distribution.
+ *
+ * Neither the name of FIRST nor the names of its contributors may be used to endorse or
+ * promote products derived from this software without specific prior written permission.
+ *
+ * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY THIS
+ * LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 package org.firstinspires.ftc.teamcode;
 
@@ -36,6 +64,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.Servo;
+
+import java.util.concurrent.TimeUnit;
 
 /*
  * This OpMode illustrates the concept of driving a path based on encoder counts.
@@ -69,10 +99,11 @@ public class BasicAutonomous extends LinearOpMode {
     /* Declare OpMode members. */
     private DcMotor         frontLeftDrive   = null;
     private DcMotor         frontRightDrive  = null;
-    private DcMotor backRightDrive = null;
-private DcMotor backLeftDrive = null;
+    private DcMotor         backRightDrive = null;
+private DcMotor             backLeftDrive = null;
 private DcMotor arm = null;
-//private Servo hand = null;
+private Servo hand = null;
+private Servo twist = null;
     private ElapsedTime     runtime = new ElapsedTime();
 
     // Calculate the COUNTS_PER_INCH for your specific drive train.
@@ -90,13 +121,16 @@ private DcMotor arm = null;
 
     @Override
     public void runOpMode() {
+        ElapsedTime runtime = new ElapsedTime();
 
         // Initialize the drive system variables.
        frontLeftDrive = hardwareMap.get(DcMotor.class, "frontLeftDrive");
        frontRightDrive = hardwareMap.get(DcMotor.class, "frontRightDrive");
-backLeftDrive = hardwareMap.get(DcMotor.class, "backLeftDrive");
-backRightDrive = hardwareMap.get(DcMotor.class, "backRightDrive");
-arm = hardwareMap.get(DcMotor.class, "arm");
+        backLeftDrive = hardwareMap.get(DcMotor.class, "backLeftDrive");
+        backRightDrive = hardwareMap.get(DcMotor.class, "backRightDrive");
+        arm = hardwareMap.get(DcMotor.class, "arm");
+        twist = hardwareMap.get(Servo.class, "twist");
+        hand = hardwareMap.get(Servo.class, "hand");
 //hand = hardwareMap.get(Servo.class, "hand");
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // When run, this OpMode should start both motors driving forward. So adjust these two lines based on your first test drive.
@@ -105,7 +139,7 @@ arm = hardwareMap.get(DcMotor.class, "arm");
         frontRightDrive.setDirection(DcMotor.Direction.FORWARD);
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         backRightDrive.setDirection(DcMotor.Direction.FORWARD);
-        //arm.setDirection(DcMotorSimple.Direction.FORWARD);
+        //arm.setDirection(DcMotorSimple.Direction.FORWARD); can you deleat that line
 
         frontRightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         frontLeftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -116,8 +150,9 @@ arm = hardwareMap.get(DcMotor.class, "arm");
         frontRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        arm.setPower(0.7);
+
 
         // Send telemetry message to indicate successful Encoder reset
         telemetry.addData("Starting at",  "%7d :%7d",
@@ -134,49 +169,74 @@ arm = hardwareMap.get(DcMotor.class, "arm");
         waitForStart();
 
 
-      //  encoderDrive(0.5, 12, 12, 5);
+       encoderDrive(0.5, -27, -27, 1.35);
 
-       // encoderDrive(TURN_SPEED, -5, 5, 1);
-        arm.setDirection(DcMotor.Direction.FORWARD);
-        arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        arm.setTargetPosition(-6000);
-        arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        runtime.reset();
 
-//encoderDrive(DRIVE_SPEED, 12, 12, 1.5);
-//        armMotor.setPower(0.5); // Set arm motor power to 50% forward
+        arm.setDirection(DcMotor.Direction.REVERSE);
+        while (runtime.seconds() < 6.75) {
+            arm.setPower(0.5);}
+        if (runtime.seconds() > 6.75) {
+            arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            arm.setPower(0);
+        }
 
-//// Example using encoder to move arm to a specific position:
-//
-//        int targetPosition = 1000; // desired encoder counts
-//
-//        while (armMotor.getCurrentPosition() < targetPosition) {
-//
-//            armMotor.setPower(0.5);
-//
-//        }
-//
-//        armMotor.setPower(0); // Stop the motor
-//       // encoderDrive(DRIVE_SPEED, -12, -12, 1); //forward 12 for 1 sec
+     twist.setPosition(0.2);
+        sleep(600);
+        telemetry.addData("imTiredOfDoingPrintStatements", twist.getPosition());
 
-        //encoderDrive(TURN_SPEED, 3, 3, 1);
-     //   encoderDrive();
+        hand.setPosition(0.8117);
+        sleep(400);
+        telemetry.addData( "handPosition", hand.getPosition());
+
+        twist.setPosition(0.62);
+        sleep( 400);
+
+        hand.setPosition(0.88);
+        sleep(400);
+
+        runtime.reset();
+
+        while (runtime.seconds() < 5) {
+            arm.setPower(-0.7);
+            if (runtime.seconds() > 5) {
+                arm.setPower(0);
+            }
+        }
+
+        hand.setPosition(0.8117);
+        sleep(300);
+
+        encoderDrive(.5, -7.60, 7.60, 1);
+
+        encoderDrive(.5, 18, 18, 2);
+
+        hand.setPosition(0.88);
+        sleep(200);
+
+        encoderDrive(.5, -16, -18, 2);
+
+        runtime.reset();
+
+        while (runtime.seconds() < 4.25) {
+            arm.setPower(0.8);
+        }
+        if (runtime.seconds() > 4.25) {
+            arm.setPower(0);
+        }
+
+        twist.setPosition(0.0);
+        sleep( 700);
+
+        hand.setPosition(0.8117);
+        sleep(400);
+
+        twist.setPosition(0.62);
 
         telemetry.addData("Path", "Complete");
         telemetry.update();
-        sleep(1000);  // pause to display final telemetry message.
+        sleep(500);  // pause to display final telemetry message.
     }
-
-
-    /*
-     *  Method to perform a relative move, based on encoder counts.
-     *  Encoders are not reset as the move is based on the current position.
-     *  Move will stop if any of three conditions occur:
-     *  1) Move gets to the desired position
-     *  2) Move runs out of time
-     *  3) Driver stops the OpMode running.
-     */
-
-
 
 
     public void encoderDrive(double speed,
@@ -205,6 +265,7 @@ arm = hardwareMap.get(DcMotor.class, "arm");
             frontRightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             backLeftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             backRightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
             // reset the timeout time and start motion.
             runtime.reset();
             frontLeftDrive.setPower(Math.abs(speed));
@@ -236,13 +297,11 @@ arm = hardwareMap.get(DcMotor.class, "arm");
             backLeftDrive.setPower(0);
             backRightDrive.setPower(0);
 
-            // Turn off RUN_TO_POSITION
             frontLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             frontRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-            sleep(250);   // optional pause after each move.
         }
     }
     }
