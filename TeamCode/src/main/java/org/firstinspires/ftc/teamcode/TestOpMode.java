@@ -162,7 +162,7 @@ limitFront = hardwareMap.get(DigitalChannel.class, "limitFront");
         if (gamepad1.b) {//sets the hook to the "open" position
             hook.setPosition(.6);
         }
-
+//
         if (gamepad2.a) {
             wrist.setPosition(wrist.getPosition() + 0.01);
         }
