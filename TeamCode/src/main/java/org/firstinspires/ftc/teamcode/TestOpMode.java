@@ -39,9 +39,9 @@ public class TestOpMode extends OpMode {
     private DigitalChannel LED = null;
     private RevColorSensorV3 colorSensor = null;
     private DigitalChannel laser = null;
-private DigitalChannel limitBack = null;
-private DigitalChannel limitFront = null;
-// Array for average color numbers to use in color sensor, arranged RGBA
+    private DigitalChannel limitBack = null;
+    private DigitalChannel limitFront = null;
+    // Array for average color numbers to use in color sensor, arranged RGBA
     int[] redConst = {300, 88, 164, 184};
     int[] blueConst = {72, 305, 141, 172};
     int[] yellowConst = {485, 139, 577, 400};
@@ -70,8 +70,8 @@ private DigitalChannel limitFront = null;
         hand = hardwareMap.get(Servo.class, "hand");
         extender = hardwareMap.get(Servo.class, "extender");
         twist = hardwareMap.get(Servo.class, "twist");
-limitBack = hardwareMap.get(DigitalChannel.class, "limitBack");
-limitFront = hardwareMap.get(DigitalChannel.class, "limitFront");
+        limitBack = hardwareMap.get(DigitalChannel.class, "limitBack");
+        limitFront = hardwareMap.get(DigitalChannel.class, "limitFront");
         limit1 = hardwareMap.get(DigitalChannel.class, "limit1");
         limitFront = hardwareMap.get(DigitalChannel.class, "limitFront");
         limitBack = hardwareMap.get(DigitalChannel.class, "limitBack");
@@ -92,7 +92,7 @@ limitFront = hardwareMap.get(DigitalChannel.class, "limitFront");
         arm.setDirection(DcMotorSimple.Direction.FORWARD);
         intake.setDirection(DcMotorSimple.Direction.FORWARD);
 
-        arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -113,20 +113,17 @@ limitFront = hardwareMap.get(DigitalChannel.class, "limitFront");
         runtime.reset();
     }
 
-    /*
-     * Code to run REPEATEDLY after the driver hits START but before they hit STOP
-     */
+
     @Override
     public void loop() {
-        // Setup a variable for each drive wheel to save power level for telemetry
 
 
         telemetry.addData("Status", "Run Time: " + runtime.toString());
 
-        double rotation = gamepad1.left_stick_y; //turning drive chassis
-        double movement = -gamepad1.left_stick_x;//Forward/backward drive chassis
+        double rotation = gamepad1.left_stick_y;
+        double movement = -gamepad1.left_stick_x;
         double strafing = -gamepad1.right_stick_x;
-        double uppies = gamepad2.left_stick_y;//vertical arm movement
+        double uppies = gamepad2.left_stick_y;
 
         frontLeftDrive.setPower(-0.75 * signedSquare(rotation + strafing + movement));
         frontRightDrive.setPower(-0.75 * signedSquare(rotation - strafing - movement));
@@ -137,19 +134,20 @@ limitFront = hardwareMap.get(DigitalChannel.class, "limitFront");
         if (uppies > 0.05) {//vertical arm movement
             arm.setPower(.7);
         } else if (uppies < -0.05) {
-            arm.setPower(-.9);
+            arm.setPower(-.8);
         } else {
             arm.setPower(0);
+            arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
         if (gamepad2.right_bumper) {
             twist.setPosition(0.62);//closer to 0
         }
         if (gamepad2.left_bumper) {
             twist.setPosition(0.0); //TODO: increase speed
-}
+        }
         telemetry.addData("imTiredOfDoingPrintStatements", twist.getPosition());
         if (gamepad2.x) {
-            elbow.setPosition(0.05);//down
+            elbow.setPosition(0.3);//down
         }
         if (gamepad2.y) {
             elbow.setPosition(0.65); //up
@@ -164,14 +162,15 @@ limitFront = hardwareMap.get(DigitalChannel.class, "limitFront");
         }
 
         if (gamepad2.a) {
-            wrist.setPosition(wrist.getPosition() + 0.01);
+            wrist.setPosition(wrist.getPosition() + 0.1);
         }
         if (gamepad2.b) {
-            wrist.setPosition(wrist.getPosition() - 0.01);
+            wrist.setPosition(wrist.getPosition() - 0.1);
 
         } //increases speed
+
         telemetry.addData("PositionWrist", wrist.getPosition());
-        //       hand.setPosition(hand.getPosition() + (gamepad1.right_stick_y * 0.01));
+
 
         if (gamepad1.x) {//grips blocks to take up to baskets
             hand.setPosition(0.8117);//Open
@@ -180,7 +179,7 @@ limitFront = hardwareMap.get(DigitalChannel.class, "limitFront");
 
         }
 
-          LED.setState(laser.getState());
+        LED.setState(laser.getState());
 
         telemetry.addData("BlockSensor", laser.getState());
         telemetry.addData("PositionHand", hand.getPosition());
@@ -206,9 +205,9 @@ limitFront = hardwareMap.get(DigitalChannel.class, "limitFront");
         telemetry.addData("PositionExtender",extender.getPosition());
 
         telemetry.addData("red", colorSensor.red());
-            telemetry.addData("blue", colorSensor.blue());
-            telemetry.addData("green", colorSensor.green());
-            telemetry.addData("alpha", colorSensor.alpha());
+        telemetry.addData("blue", colorSensor.blue());
+        telemetry.addData("green", colorSensor.green());
+        telemetry.addData("alpha", colorSensor.alpha());
 
 
         checkLimitSwitch();
@@ -216,7 +215,7 @@ limitFront = hardwareMap.get(DigitalChannel.class, "limitFront");
     }
 
 
-//0.3689
+    //0.3689
 //    .625
     /*
      * Code to run ONCE after the driver hits STOP
