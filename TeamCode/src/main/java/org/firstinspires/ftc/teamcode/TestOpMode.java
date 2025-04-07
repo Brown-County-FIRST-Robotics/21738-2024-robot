@@ -11,7 +11,6 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import java.util.concurrent.TimeUnit;
 
 
 @TeleOp(name="Test", group="Iterative OpMode")
@@ -92,7 +91,7 @@ public class TestOpMode extends OpMode {
         arm.setDirection(DcMotorSimple.Direction.FORWARD);
         intake.setDirection(DcMotorSimple.Direction.FORWARD);
 
-
+        arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -113,17 +112,20 @@ public class TestOpMode extends OpMode {
         runtime.reset();
     }
 
-
+    /*
+     * Code to run REPEATEDLY after the driver hits START but before they hit STOP
+     */
     @Override
     public void loop() {
+        // Setup a variable for each drive wheel to save power level for telemetry
 
 
         telemetry.addData("Status", "Run Time: " + runtime.toString());
 
-        double rotation = gamepad1.left_stick_y;
-        double movement = -gamepad1.left_stick_x;
+        double rotation = gamepad1.left_stick_y; //turning drive chassis
+        double movement = -gamepad1.left_stick_x;//Forward/backward drive chassis
         double strafing = -gamepad1.right_stick_x;
-        double uppies = gamepad2.left_stick_y;
+        double uppies = gamepad2.left_stick_y;//vertical arm movement
 
         frontLeftDrive.setPower(-0.75 * signedSquare(rotation + strafing + movement));
         frontRightDrive.setPower(-0.75 * signedSquare(rotation - strafing - movement));
@@ -132,25 +134,21 @@ public class TestOpMode extends OpMode {
 
 
         if (uppies > 0.05) {//vertical arm movement
-            arm.setPower(.7);
+            arm.setPower(.5);
         } else if (uppies < -0.05) {
-            arm.setPower(-.8);
+            arm.setPower(-.5);
         } else {
             arm.setPower(0);
-            arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
-        if (gamepad2.right_bumper) {
-            twist.setPosition(0.62);//closer to 0
-        }
-        if (gamepad2.left_bumper) {
-            twist.setPosition(0.0); //TODO: increase speed
-        }
-        telemetry.addData("imTiredOfDoingPrintStatements", twist.getPosition());
+
+        twist.setPosition(twist.getPosition() + (gamepad2.right_stick_x* 0.01));
+
+
         if (gamepad2.x) {
-            elbow.setPosition(0.3);//down
+            elbow.setPosition(0.2);//closer to 0
         }
         if (gamepad2.y) {
-            elbow.setPosition(0.65); //up
+            elbow.setPosition(0.65); //TODO: increase speed
         }
         telemetry.addData("Position", elbow.getPosition());//Shows the position of elbow on drive hub
 
@@ -162,15 +160,14 @@ public class TestOpMode extends OpMode {
         }
 
         if (gamepad2.a) {
-            wrist.setPosition(wrist.getPosition() + 0.1);
+            wrist.setPosition(wrist.getPosition() + 0.01);
         }
         if (gamepad2.b) {
-            wrist.setPosition(wrist.getPosition() - 0.1);
+            wrist.setPosition(wrist.getPosition() - 0.01);
 
         } //increases speed
-
         telemetry.addData("PositionWrist", wrist.getPosition());
-
+        //       hand.setPosition(hand.getPosition() + (gamepad1.right_stick_y * 0.01));
 
         if (gamepad1.x) {//grips blocks to take up to baskets
             hand.setPosition(0.8117);//Open

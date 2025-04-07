@@ -97,13 +97,13 @@ import java.util.concurrent.TimeUnit;
 public class BasicAutonomous extends LinearOpMode {
 
     /* Declare OpMode members. */
-    private DcMotor         frontLeftDrive   = null;
-    private DcMotor         frontRightDrive  = null;
-    private DcMotor         backRightDrive = null;
-private DcMotor             backLeftDrive = null;
-private DcMotor arm = null;
-private Servo hand = null;
-private Servo twist = null;
+    private DcMotor frontLeftDrive   = null;
+    private DcMotor frontRightDrive  = null;
+    private DcMotor backRightDrive = null;
+    private DcMotor backLeftDrive = null;
+    private DcMotor arm = null;
+    private Servo hand = null;
+    private Servo twist = null;
     private ElapsedTime     runtime = new ElapsedTime();
 
     // Calculate the COUNTS_PER_INCH for your specific drive train.
@@ -139,7 +139,7 @@ private Servo twist = null;
         frontRightDrive.setDirection(DcMotor.Direction.FORWARD);
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         backRightDrive.setDirection(DcMotor.Direction.FORWARD);
-        //arm.setDirection(DcMotorSimple.Direction.FORWARD); can you deleat that line
+
 
         frontRightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         frontLeftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -169,7 +169,7 @@ private Servo twist = null;
         waitForStart();
 
 
-       encoderDrive(0.5, -27, -27, 1.35);
+       encoderDrive(0.5, -26, -26, 1.35);
 
         runtime.reset();
 
@@ -207,14 +207,14 @@ private Servo twist = null;
         hand.setPosition(0.8117);
         sleep(300);
 
-        encoderDrive(.5, -7.60, 7.60, 1);
+        encoderDrive(.5, -7.2, 7.2, 1);
 
-        encoderDrive(.5, 18, 18, 2);
+        encoderDrive(.5, 16, 16, 2);
 
         hand.setPosition(0.88);
         sleep(200);
 
-        encoderDrive(.5, -16, -18, 2);
+        encoderDrive(.5, -13.5, -15.5, 2);
 
         runtime.reset();
 
